@@ -20,15 +20,15 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Picture Selection</string>
+         <string>Input Directory</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="lineEdit_PictureSel"/>
+       <widget class="QLineEdit" name="lineEdit_InputDir"/>
       </item>
       <item>
-       <widget class="QToolButton" name="toolButton_PictureSel">
+       <widget class="QToolButton" name="toolButton_InputDir">
         <property name="text">
          <string>...</string>
         </property>

@@ -18,7 +18,7 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_toolButton_PictureSel_clicked();
+    void on_toolButton_InputDir_clicked();
 
     void on_toolButton_OutputDir_clicked();
 
