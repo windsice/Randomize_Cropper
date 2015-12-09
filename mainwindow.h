@@ -24,6 +24,8 @@ private slots:
 
     void on_pushButton_OK_clicked();
 
+    void on_pushButton_OK_Split_clicked();
+
 private:
     Ui::MainWindow *ui;
 

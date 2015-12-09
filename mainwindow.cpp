@@ -12,6 +12,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBox_fileType->addItem(".jpg");
     ui->comboBox_fileType->addItem(".pgm");
     ui->comboBox_fileType->addItem(".png");
+    ui->comboBox_SplitedFileType->addItem(".jpg");
+    ui->comboBox_SplitedFileType->addItem(".pgm");
+    ui->comboBox_SplitedFileType->addItem(".png");
 }
 
 MainWindow::~MainWindow()
@@ -67,5 +70,36 @@ void MainWindow::on_pushButton_OK_clicked()
         ui->statusBar->showMessage(picture + " Done");
         }
         outputIndex += Crop_Need;
+    }
+}
+
+void MainWindow::on_pushButton_OK_Split_clicked()
+{
+    int splitNeed = ui->spinBox_SplitNeed->value();
+    int splitedH,splitedW;
+
+    QString picture;
+    int outputIndex = 0;
+    QDirIterator it(ui->lineEdit_InputDir->text(),QDir::Files);
+    while(it.hasNext())
+    {
+        it.next();
+        QImage image(it.filePath());
+        splitedH = image.size().height()/splitNeed;
+        splitedW = image.size().width()/splitNeed;
+        for(int i = 0; i < image.size().height(); i += splitedH)
+        {
+            for(int j = 0; j < image.size().width(); j += splitedW)
+            {
+                picture = QString("%1%2%3").arg(ui->lineEdit_OutputDir->text() + "/")
+                        .arg(outputIndex,8,10,QLatin1Char('0')).arg(ui->comboBox_SplitedFileType->currentText());
+                QImage copy = image.copy(j,i,splitedW,splitedH);
+                copy.save(picture);
+
+                ui->statusBar->showMessage(picture + " Done");
+                outputIndex++;
+            }
+        }
+
     }
 }
