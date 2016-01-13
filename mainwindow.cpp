@@ -103,3 +103,27 @@ void MainWindow::on_pushButton_OK_Split_clicked()
 
     }
 }
+
+void MainWindow::on_pushButton_Dup_clicked()
+{
+    QString prefix = ui->lineEdit_DupPrefix->text();
+    int DupNum = ui->spinBox_DupNum->value();
+    QString dataFormat;
+
+    QString picture;
+    int outputIndex = 0;
+    QDirIterator it(ui->lineEdit_InputDir->text(),QDir::Files);
+    while(it.hasNext()){
+        it.next();
+        QImage image(it.filePath());
+        dataFormat = QFileInfo(it.filePath()).completeSuffix();
+        for(int i = 0; i < DupNum; i++){
+            picture = QString("%1%2%3%4").arg(ui->lineEdit_OutputDir->text() + "/")
+                      .arg(prefix).arg(outputIndex,8,10,QLatin1Char('0')).arg("."+ dataFormat);
+            image.save(picture);
+
+            ui->statusBar->showMessage(picture + " Done");
+            outputIndex++;
+        }
+    }
+}
