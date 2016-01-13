@@ -109,9 +109,10 @@ void MainWindow::StartSplitCut(){
         QImage image(it.filePath());
         splitedH = image.size().height()/splitNeed;
         splitedW = image.size().width()/splitNeed;
-        for(int i = 0; i < image.size().height(); i += splitedH)
+        //For size that is not divisible by the splitneed, give up the additional portion at the end
+        for(int i = 0; i <= image.size().height() - splitedH; i += splitedH)
         {
-            for(int j = 0; j < image.size().width(); j += splitedW)
+            for(int j = 0; j <= image.size().width() - splitedW; j += splitedW)
             {
                 picture = QString("%1%2%3").arg(ui->lineEdit_OutputDir->text() + "/")
                         .arg(outputIndex,8,10,QLatin1Char('0')).arg(ui->comboBox_SplitedFileType->currentText());

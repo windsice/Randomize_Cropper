@@ -60,7 +60,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -185,7 +185,7 @@
           <item>
            <widget class="QLabel" name="label_6">
             <property name="text">
-             <string>Number Of Split in column and row</string>
+             <string>Number of splits in column and row</string>
             </property>
            </widget>
           </item>
