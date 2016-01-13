@@ -1,7 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QMessageBox>
 #include <QFileDialog>
 #include <QDirIterator>
+#include <QtConcurrent/qtconcurrentrun.h>
 #include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -15,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBox_SplitedFileType->addItem(".jpg");
     ui->comboBox_SplitedFileType->addItem(".pgm");
     ui->comboBox_SplitedFileType->addItem(".png");
+
+    connect(this,SIGNAL(updateStatus(QString)),this,SLOT(onUpdateStatus(QString)));
 }
 
 MainWindow::~MainWindow()
@@ -38,8 +42,19 @@ void MainWindow::on_toolButton_OutputDir_clicked()
     ui->lineEdit_OutputDir->setText(filename);
 }
 
+void MainWindow::onUpdateStatus(const QString &picture){
+    ui->statusBar->showMessage(picture + " Done");
+}
+
 void MainWindow::on_pushButton_OK_clicked()
 {
+    if(SameIO())
+        return;
+
+    QFuture<void> thread = QtConcurrent::run(this,&MainWindow::StartRandomCut);
+}
+
+void MainWindow::StartRandomCut(){
     Cropped_Height = ui->spinBox_CroppedH->value();
     Cropped_Width = ui->spinBox_CroppedW->value();
     Crop_Need = ui->spinBox_CropNeed->value();
@@ -67,7 +82,7 @@ void MainWindow::on_pushButton_OK_clicked()
         QImage copy = image.copy(abs(randX),abs(randY),Cropped_Width,Cropped_Height);
         copy.save(picture);
 
-        ui->statusBar->showMessage(picture + " Done");
+        emit MainWindow::updateStatus(picture);
         }
         outputIndex += Crop_Need;
     }
@@ -75,6 +90,13 @@ void MainWindow::on_pushButton_OK_clicked()
 
 void MainWindow::on_pushButton_OK_Split_clicked()
 {
+    if(SameIO())
+        return;
+
+    QFuture<void> thread = QtConcurrent::run(this,&MainWindow::StartSplitCut);
+}
+
+void MainWindow::StartSplitCut(){
     int splitNeed = ui->spinBox_SplitNeed->value();
     int splitedH,splitedW;
 
@@ -96,16 +118,22 @@ void MainWindow::on_pushButton_OK_Split_clicked()
                 QImage copy = image.copy(j,i,splitedW,splitedH);
                 copy.save(picture);
 
-                ui->statusBar->showMessage(picture + " Done");
+                emit MainWindow::updateStatus(picture);
                 outputIndex++;
             }
         }
-
     }
 }
 
 void MainWindow::on_pushButton_Dup_clicked()
 {
+    if(SameIO())
+        return;
+
+    QFuture<void> thread = QtConcurrent::run(this,&MainWindow::StartDuplicating);
+}
+
+void MainWindow::StartDuplicating(){
     QString prefix = ui->lineEdit_DupPrefix->text();
     int DupNum = ui->spinBox_DupNum->value();
     QString dataFormat;
@@ -122,8 +150,17 @@ void MainWindow::on_pushButton_Dup_clicked()
                       .arg(prefix).arg(outputIndex,8,10,QLatin1Char('0')).arg("."+ dataFormat);
             image.save(picture);
 
-            ui->statusBar->showMessage(picture + " Done");
+            emit MainWindow::updateStatus(picture);
             outputIndex++;
         }
     }
+}
+
+bool MainWindow::SameIO(){
+    if(ui->lineEdit_InputDir == ui->lineEdit_OutputDir)
+    {
+        QMessageBox::critical(this,"Same IO Folder","Please do not use the same folder for input and output");
+        return true;
+    }
+    return false;
 }

@@ -17,7 +17,12 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+signals:
+    void updateStatus(const QString&);
+
 private slots:
+    void onUpdateStatus(const QString&);
+
     void on_toolButton_InputDir_clicked();
 
     void on_toolButton_OutputDir_clicked();
@@ -29,6 +34,11 @@ private slots:
     void on_pushButton_Dup_clicked();
 
 private:
+    void StartRandomCut();
+    void StartSplitCut();
+    void StartDuplicating();
+    bool SameIO();
+
     Ui::MainWindow *ui;
 
     int Cropped_Width;
