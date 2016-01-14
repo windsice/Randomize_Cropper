@@ -6,6 +6,10 @@
 #include <QtConcurrent/qtconcurrentrun.h>
 #include <QDebug>
 
+QString MainWindow::RANDOMCUT = "Random Cut";
+QString MainWindow::SPLITCUT = "Split Cut";
+QString MainWindow::DUPANDCON = "Duplicate/Convert";
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -14,9 +18,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBox_fileType->addItem(".jpg");
     ui->comboBox_fileType->addItem(".pgm");
     ui->comboBox_fileType->addItem(".png");
-    ui->comboBox_SplitedFileType->addItem(".jpg");
-    ui->comboBox_SplitedFileType->addItem(".pgm");
-    ui->comboBox_SplitedFileType->addItem(".png");
+    ui->comboBox_fileType->addItem(".bmp");
+    ui->comboBox_fileType->addItem("Keep Original filetype");
+    ui->tabWidget_SelOp->setTabText(0,MainWindow::RANDOMCUT);
+    ui->tabWidget_SelOp->setTabText(1,MainWindow::SPLITCUT);
+    ui->tabWidget_SelOp->setTabText(2,MainWindow::DUPANDCON);
 
     connect(this,SIGNAL(updateStatus(QString)),this,SLOT(onUpdateStatus(QString)));
 }
@@ -51,7 +57,20 @@ void MainWindow::on_pushButton_OK_clicked()
     if(SameIO())
         return;
 
-    QFuture<void> thread = QtConcurrent::run(this,&MainWindow::StartRandomCut);
+    QFuture<void> thread;
+    switch(ui->tabWidget_SelOp->currentIndex())
+    {
+        case 0:
+            thread = QtConcurrent::run(this,&MainWindow::StartRandomCut);
+            break;
+        case 1:
+            thread = QtConcurrent::run(this,&MainWindow::StartSplitCut);
+            break;
+        case 2:
+            thread = QtConcurrent::run(this,&MainWindow::StartDuplicating);
+         break;
+
+    }
 }
 
 void MainWindow::StartRandomCut(){
@@ -88,14 +107,6 @@ void MainWindow::StartRandomCut(){
     }
 }
 
-void MainWindow::on_pushButton_OK_Split_clicked()
-{
-    if(SameIO())
-        return;
-
-    QFuture<void> thread = QtConcurrent::run(this,&MainWindow::StartSplitCut);
-}
-
 void MainWindow::StartSplitCut(){
     int splitNeed = ui->spinBox_SplitNeed->value();
     int splitedH,splitedW;
@@ -115,7 +126,7 @@ void MainWindow::StartSplitCut(){
             for(int j = 0; j <= image.size().width() - splitedW; j += splitedW)
             {
                 picture = QString("%1%2%3").arg(ui->lineEdit_OutputDir->text() + "/")
-                        .arg(outputIndex,8,10,QLatin1Char('0')).arg(ui->comboBox_SplitedFileType->currentText());
+                        .arg(outputIndex,8,10,QLatin1Char('0')).arg(ui->comboBox_fileType->currentText());
                 QImage copy = image.copy(j,i,splitedW,splitedH);
                 copy.save(picture);
 
@@ -126,18 +137,17 @@ void MainWindow::StartSplitCut(){
     }
 }
 
-void MainWindow::on_pushButton_Dup_clicked()
-{
-    if(SameIO())
-        return;
-
-    QFuture<void> thread = QtConcurrent::run(this,&MainWindow::StartDuplicating);
-}
 
 void MainWindow::StartDuplicating(){
     QString prefix = ui->lineEdit_DupPrefix->text();
     int DupNum = ui->spinBox_DupNum->value();
     QString dataFormat;
+    bool keepFormat = false;
+    if(ui->comboBox_fileType->currentText() == "Keep Original filetype")
+        keepFormat = true;
+    else{
+        dataFormat = ui->comboBox_fileType->currentText();
+    }
 
     QString picture;
     int outputIndex = 0;
@@ -145,7 +155,8 @@ void MainWindow::StartDuplicating(){
     while(it.hasNext()){
         it.next();
         QImage image(it.filePath());
-        dataFormat = QFileInfo(it.filePath()).completeSuffix();
+        if(keepFormat)
+            dataFormat = QFileInfo(it.filePath()).completeSuffix();
         for(int i = 0; i < DupNum; i++){
             picture = QString("%1%2%3%4").arg(ui->lineEdit_OutputDir->text() + "/")
                       .arg(prefix).arg(outputIndex,8,10,QLatin1Char('0')).arg("."+ dataFormat);

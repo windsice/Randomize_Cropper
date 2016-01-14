@@ -17,6 +17,10 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    static QString RANDOMCUT;
+    static QString SPLITCUT;
+    static QString DUPANDCON;
+
 signals:
     void updateStatus(const QString&);
 
@@ -28,10 +32,6 @@ private slots:
     void on_toolButton_OutputDir_clicked();
 
     void on_pushButton_OK_clicked();
-
-    void on_pushButton_OK_Split_clicked();
-
-    void on_pushButton_Dup_clicked();
 
 private:
     void StartRandomCut();
