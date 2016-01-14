@@ -156,10 +156,10 @@ void MainWindow::StartDuplicating(){
         it.next();
         QImage image(it.filePath());
         if(keepFormat)
-            dataFormat = QFileInfo(it.filePath()).completeSuffix();
+            dataFormat = "." + QFileInfo(it.filePath()).completeSuffix();
         for(int i = 0; i < DupNum; i++){
             picture = QString("%1%2%3%4").arg(ui->lineEdit_OutputDir->text() + "/")
-                      .arg(prefix).arg(outputIndex,8,10,QLatin1Char('0')).arg("."+ dataFormat);
+                      .arg(prefix).arg(outputIndex,8,10,QLatin1Char('0')).arg(dataFormat);
             image.save(picture);
 
             emit MainWindow::updateStatus(picture);
