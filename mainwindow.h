@@ -36,7 +36,8 @@ private slots:
 private:
     void StartRandomCut();
     void StartSplitCut();
-    void StartDuplicating();
+    void StartDuplication();
+    void StartResize();
     bool SameIO();
 
     Ui::MainWindow *ui;

@@ -67,9 +67,10 @@ void MainWindow::on_pushButton_OK_clicked()
             thread = QtConcurrent::run(this,&MainWindow::StartSplitCut);
             break;
         case 2:
-            thread = QtConcurrent::run(this,&MainWindow::StartDuplicating);
-         break;
-
+            thread = QtConcurrent::run(this,&MainWindow::StartDuplication);
+            break;
+        case 3:
+            thread = QtConcurrent::run(this,&MainWindow::StartResize);
     }
 }
 
@@ -96,7 +97,7 @@ void MainWindow::StartRandomCut(){
         if(randY > image.size().height()-Cropped_Height)
             randY -= Cropped_Height;
 
-        picture = QString("%1%2%3").arg(ui->lineEdit_OutputDir->text() + "/")
+        picture = QString("%1%2%3%4").arg(ui->lineEdit_OutputDir->text() + "/").arg(ui->lineEdit_OutPrefix->text())
                 .arg(i,8,10,QLatin1Char('0')).arg(ui->comboBox_fileType->currentText());
         QImage copy = image.copy(abs(randX),abs(randY),Cropped_Width,Cropped_Height);
         copy.save(picture);
@@ -125,7 +126,7 @@ void MainWindow::StartSplitCut(){
         {
             for(int j = 0; j <= image.size().width() - splitedW; j += splitedW)
             {
-                picture = QString("%1%2%3").arg(ui->lineEdit_OutputDir->text() + "/")
+                picture = QString("%1%2%3%4").arg(ui->lineEdit_OutputDir->text() + "/").arg(ui->lineEdit_OutPrefix->text())
                         .arg(outputIndex,8,10,QLatin1Char('0')).arg(ui->comboBox_fileType->currentText());
                 QImage copy = image.copy(j,i,splitedW,splitedH);
                 copy.save(picture);
@@ -138,8 +139,7 @@ void MainWindow::StartSplitCut(){
 }
 
 
-void MainWindow::StartDuplicating(){
-    QString prefix = ui->lineEdit_DupPrefix->text();
+void MainWindow::StartDuplication(){
     int DupNum = ui->spinBox_DupNum->value();
     QString dataFormat;
     bool keepFormat = false;
@@ -159,12 +159,56 @@ void MainWindow::StartDuplicating(){
             dataFormat = "." + QFileInfo(it.filePath()).completeSuffix();
         for(int i = 0; i < DupNum; i++){
             picture = QString("%1%2%3%4").arg(ui->lineEdit_OutputDir->text() + "/")
-                      .arg(prefix).arg(outputIndex,8,10,QLatin1Char('0')).arg(dataFormat);
+                      .arg(ui->lineEdit_OutPrefix->text()).arg(outputIndex,8,10,QLatin1Char('0')).arg(dataFormat);
             image.save(picture);
 
             emit MainWindow::updateStatus(picture);
             outputIndex++;
         }
+    }
+}
+
+void MainWindow::StartResize(){
+
+    QString picture;
+    bool byPercentage;
+    int percentage = 0;
+    int desiredW = 0;
+    int desiredH = 0;
+    if(ui->radioButton_ResizePer->isChecked()){
+        byPercentage = true;
+        percentage = ui->spinBox_ResizePer->value();
+     } else if(ui->radioButton_ResizeWH->isChecked()){
+        byPercentage = false;
+        desiredW = ui->spinBox_ResizeW->value();
+        desiredH = ui->spinBox_ResizeH->value();
+    } else {
+        return;
+    }
+
+
+    int outputIndex = 0;
+    QDirIterator it(ui->lineEdit_InputDir->text(),QDir::Files);
+    while(it.hasNext())
+    {
+        it.next();
+        QImage image(it.filePath());
+
+        if(byPercentage)
+        {
+            desiredW = image.size().width()*percentage/100;
+            desiredH = image.size().height()*percentage/100;
+        }
+
+        qDebug() << desiredW;
+        picture = QString("%1%2%3%4").arg(ui->lineEdit_OutputDir->text() + "/").arg(ui->lineEdit_OutPrefix->text())
+                .arg(outputIndex,8,10,QLatin1Char('0')).arg(ui->comboBox_fileType->currentText());
+        QImage resized = image.scaled(desiredW,desiredH);
+        resized.save(picture);
+
+        emit MainWindow::updateStatus(picture);
+
+        outputIndex++;
     }
 }
 
